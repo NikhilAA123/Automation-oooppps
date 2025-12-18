@@ -1,6 +1,6 @@
-# VectorShift Pipeline Builder
+# AutoNoCode Pipeline Builder
 
-A powerful, interactive, and visually stunning pipeline builder inspired by VectorShift. Built with React Flow and FastAPI, this application allows users to construct complex logic flows with specialized nodes, real-time feedback, and backend validation.
+A powerful, interactive, and visually stunning pipeline builder. Built with React Flow and FastAPI, this application allows users to construct complex logic flows with specialized nodes, real-time feedback, and backend validation.
 
 ## 🚀 Features
 
@@ -64,4 +64,4 @@ npm start
 - `backend/main.py`: FastAPI endpoints and DAG algorithm.
 
 ---
-**Problem Statement Reference**: This project fulfills the VectorShift technical assessment for building a modular, abstract, and functional pipeline UI with a backend DAG check.
+**Problem Statement Reference**: This project fulfills the technical assessment for building a modular, abstract, and functional pipeline UI with a backend DAG check.
