@@ -1,49 +1,501 @@
+/* ================================
+   VectorShift-inspired design tokens
+================================== */
 :root {
-  --bg-main: #0f172a; /* app background */
-  --bg-canvas: #020617; /* canvas */
-  --bg-node: #020617; /* node card */
-  --bg-node-header: #020617;
+  /* Updated VectorShift-inspired design tokens */
+  --vs-bg-canvas: #f8fafc;
+  --vs-bg-node: #ffffff;
 
-  --border-node: #1e293b;
-  --text-primary: #e5e7eb;
-  --text-secondary: #94a3b8;
+  --vs-border: #e2e8f0;
+  --vs-border-selected: #6366f1;
+  /* Purple/Indigo */
+  --vs-border-hover: #a5b4fc;
 
-  --accent: #6366f1; /* indigo */
-  --accent-hover: #4f46e5;
+  --vs-text-primary: #1e293b;
+  --vs-text-secondary: #64748b;
+  --vs-text-accent: #6366f1;
 
-  --shadow-node: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --vs-accent: #6366f1;
+  --vs-accent-light: #e0e7ff;
+
+  --vs-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --vs-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  --vs-radius: 8px;
 }
 
-input,
-select {
+/* Node Elements */
+.node-container {
+  background: var(--vs-bg-node);
+  border: 1px solid var(--vs-border);
+  border-radius: var(--vs-radius);
+  box-shadow: var(--vs-shadow);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.node-container:hover {
+  border-color: var(--vs-border-hover);
+  box-shadow: var(--vs-shadow-hover);
+}
+
+.node-container.selected {
+  border-color: var(--vs-border-selected);
+  box-shadow: 0 0 0 2px var(--vs-accent-light);
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8fafc;
+  /* Slight grey header */
+  border-bottom: 1px solid var(--vs-border);
+  font-weight: 600;
+  color: var(--vs-text-primary);
+  font-size: 14px;
+}
+
+.node-description {
+  font-size: 12px;
+  color: var(--vs-text-secondary);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.suggestion-box {
+  background-color: #f5f3ff;
+  /* Light purple bg */
+  border: 1px solid #c7d2fe;
+  /* Light purple border */
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11px;
+  color: #4338ca;
+  /* Darker purple text */
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.styled-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--vs-text-secondary);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.styled-input,
+.styled-select {
   width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--vs-border);
+  font-size: 13px;
+  color: var(--vs-text-primary);
+  background: #fff;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.styled-input:focus,
+.styled-select:focus {
+  border-color: var(--vs-accent);
+  box-shadow: 0 0 0 2px var(--vs-accent-light);
+}
+
+/* ================================
+   Global base styles
+================================== */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  /* required for full-screen canvas */
+}
+
+body {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  background-color: var(--vs-bg-canvas);
+  color: var(--vs-text-primary);
+}
+
+/* ================================
+   Inputs inside nodes
+================================== */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 6px 8px;
   margin-top: 4px;
   margin-bottom: 8px;
-  padding: 6px 8px;
 
-  background-color: #020617;
-  color: var(--text-primary);
-
-  border: 1px solid var(--border-node);
   border-radius: 6px;
+  border: 1px solid var(--vs-border);
+
+  font-size: 13px;
+  color: var(--vs-text-primary);
+  background-color: #ffffff;
+
   outline: none;
 }
 
 input:focus,
-select:focus {
-  border-color: var(--accent);
+select:focus,
+textarea:focus {
+  border-color: var(--vs-accent);
 }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ================================
+   ReactFlow — VectorShift behavior
+================================== */
+
+/* Fix controls position ( + / − / fit ) */
+.react-flow__controls {
+  position: fixed !important;
+  bottom: 20px;
+  /* Align with bottom of minimap */
+  right: 230px;
+  /* Place to the left of minimap (assuming minimap is ~200px wide) */
+  left: auto !important;
+  /* CRITICAL: Override default left positioning */
+  top: auto !important;
+  z-index: 1000;
+  display: flex !important;
+  flex-direction: column !important;
+  /* Stack vertically like screenshot */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+/* ReactFlow Handles - Connection Dots */
+.react-flow__handle {
+  width: 12px;
+  height: 12px;
+  background-color: #ffffff;
+  border: 2px solid var(--vs-accent);
+  border-radius: 50% !important;
+  /* Force circle shape */
+  transition: all 0.2s ease;
+}
+
+.react-flow__handle:hover {
+  width: 16px;
+  height: 16px;
+  background-color: var(--vs-accent);
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+}
+
+/* Fix minimap position */
+.react-flow__minimap {
+  position: fixed !important;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  margin: 0 !important;
+  /* Prevent default margins affecting position */
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: #ffffff;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--vs-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--vs-text-primary);
+}
+
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-option-card {
+  border: 1px solid var(--vs-border);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fff;
+}
+
+.modal-option-card:hover {
+  border-color: var(--vs-accent);
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1);
+  transform: translateY(-1px);
+}
+
+.modal-option-title {
+  color: var(--vs-accent);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.modal-option-desc {
+  color: var(--vs-text-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Delete Confirmation Popover */
+.delete-confirm-dialog {
+  position: absolute;
+  top: 36px;
+  right: 8px;
+  background: #ffffff;
+  border: 1px solid var(--vs-border);
+  box-shadow: var(--vs-shadow-hover);
+  border-radius: 6px;
+  padding: 12px;
+  z-index: 1000;
+  width: 200px;
+  animation: modalFadeIn 0.1s ease-out;
+}
+
+.delete-confirm-text {
+  font-size: 13px;
+  color: var(--vs-text-primary);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.delete-confirm-btn {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.delete-confirm-btn.cancel {
+  background: transparent;
+  color: var(--vs-text-secondary);
+}
+
+.delete-confirm-btn.cancel:hover {
+  background: #f1f5f9;
+  color: var(--vs-text-primary);
+}
+
+.delete-confirm-btn.confirm {
+  background: #ef4444;
+  color: white;
+}
+
+.delete-confirm-btn.confirm:hover {
+  background: #dc2626;
+}
+
+/* Slightly soften edges like VectorShift */
+/* Edge path styling - colorful with running animation */
+.react-flow__edge-path {
+  stroke: #6366f1;
+  /* Purple accent color - always visible */
+  stroke-width: 2.5;
+  fill: none;
+  stroke-dasharray: 5 5;
+  animation: edgeFlow 0.5s linear infinite;
+  /* Always animate */
+}
+
+@keyframes edgeFlow {
+  from {
+    stroke-dashoffset: 10;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Edge hover effect - glow on hover */
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #8b5cf6;
+  /* Brighter purple on hover */
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.6));
+}
+
+/* Selected edge */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #a855f7;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.7));
+}
+
+/* ================================
+   Custom UI Elements
+================================== */
+
+/* "Add Your First Node" Empty State Button */
+.add-node-btn {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 14px;
+  color: #0f172a;
+  z-index: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.add-node-btn:hover {
+  background-color: #e0e7ff;
+  /* Light blue hover */
+  border-color: #6366f1;
+  color: #4338ca;
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
+}
+
+/* Collapsible Toolbar / Add Node Card */
+.toolbar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toolbar-trigger {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* Card-like shadow */
+  transition: all 0.2s ease;
+  font-size: 20px;
+  /* For the + icon */
+}
+
+.toolbar-trigger:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+  background: #f8fafc;
+}
+
+.toolbar-content {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* Premium card shadow */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 320px;
+  /* Restrict width for card feel */
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Toolbar Search Input */
+.toolbar-search {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.toolbar-search:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  transform: scale(1.01);
+}
+
+.toolbar-search::placeholder {
+  color: #94a3b8;
 }
