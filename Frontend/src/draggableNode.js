@@ -7,6 +7,18 @@ export const DraggableNode = ({ type, label }) => {
       event.dataTransfer.setData('application/reactflow', JSON.stringify(appData));
       event.dataTransfer.effectAllowed = 'move';
     };
+  style={{
+  cursor: 'grab',
+  minWidth: '90px',
+  height: '60px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: '10px',
+  backgroundColor: '#020617',
+  border: '1px solid var(--border-node)',
+}}
+
   
     return (
       <div
