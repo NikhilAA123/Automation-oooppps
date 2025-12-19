@@ -213,7 +213,7 @@ textarea:focus {
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
-  top: 0;
+  top: 100px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -251,6 +251,8 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .modal-option-card {

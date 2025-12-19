@@ -338,37 +338,6 @@ export const PipelineUI = () => {
           </div>
         )}
 
-        {/* Node Selection Modal */}
-        {isModalOpen && (
-          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <span>Select Pipeline Type</span>
-                <span onClick={() => setIsModalOpen(false)} style={{ cursor: 'pointer', fontSize: 18 }}>✕</span>
-              </div>
-              <div className="modal-body">
-                {/* Card Options */}
-                <div className="modal-option-card" onClick={() => handleModalAddNode('customInput')}>
-                  <div className="modal-option-title">Input Node</div>
-                  <div className="modal-option-desc">Start your workflow with an input. Pass values like text or files.</div>
-                </div>
-                <div className="modal-option-card" onClick={() => handleModalAddNode('llm')}>
-                  <div className="modal-option-title">LLM Engine</div>
-                  <div className="modal-option-desc">Use a Large Language Model to process and generate text.</div>
-                </div>
-                <div className="modal-option-card" onClick={() => handleModalAddNode('customOutput')}>
-                  <div className="modal-option-title">Output Node</div>
-                  <div className="modal-option-desc">Define the final output or result of your pipeline.</div>
-                </div>
-                <div className="modal-option-card" onClick={() => handleModalAddNode('text')}>
-                  <div className="modal-option-title">Text / Template</div>
-                  <div className="modal-option-desc">Add static text or use variables for templating.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Zoom Percentage Indicator */}
         <div
           style={{
@@ -406,6 +375,54 @@ export const PipelineUI = () => {
           <MiniMap />
         </ReactFlow>
       </div>
+
+      {/* Node Selection Modal */}
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <span>Select the Node</span>
+              <span onClick={() => setIsModalOpen(false)} style={{ cursor: 'pointer', fontSize: 18 }}>✕</span>
+            </div>
+            <div className="modal-body">
+              {/* Card Options */}
+              <div className="modal-option-card" onClick={() => handleModalAddNode('customInput')}>
+                <div className="modal-option-title">Input Node</div>
+                <div className="modal-option-desc">Start your workflow with an input. Pass values like text or files.</div>
+              </div>
+              <div className="modal-option-card" onClick={() => handleModalAddNode('llm')}>
+                <div className="modal-option-title">LLM Engine</div>
+                <div className="modal-option-desc">Use a Large Language Model to process and generate text.</div>
+              </div>
+              <div className="modal-option-card" onClick={() => handleModalAddNode('customOutput')}>
+                <div className="modal-option-title">Output Node</div>
+                <div className="modal-option-desc">Define the final output or result of your pipeline.</div>
+              </div>
+              <div className="modal-option-card" onClick={() => handleModalAddNode('text')}>
+                <div className="modal-option-title">Text / Template</div>
+                <div className="modal-option-desc">Add static text or use variables for templating.</div>
+              </div>
+              {/* Dummy Nodes */}
+              <div className="modal-option-card" onClick={() => handleModalAddNode('api')}>
+                <div className="modal-option-title">API Node</div>
+                <div className="modal-option-desc">Connect your workflow to external services and APIs.</div>
+              </div>
+              <div className="modal-option-card" onClick={() => handleModalAddNode('filter')}>
+                <div className="modal-option-title">Filter Node</div>
+                <div className="modal-option-desc">Filter and transform data based on custom rules.</div>
+              </div>
+              <div className="modal-option-card" onClick={() => handleModalAddNode('math')}>
+                <div className="modal-option-title">Math Node</div>
+                <div className="modal-option-desc">Perform mathematical operations on numeric values.</div>
+              </div>
+              <div className="modal-option-card" onClick={() => handleModalAddNode('delay')}>
+                <div className="modal-option-title">Delay Node</div>
+                <div className="modal-option-desc">Add pauses or timeouts to your workflow execution.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
