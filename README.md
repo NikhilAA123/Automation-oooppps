@@ -5,6 +5,7 @@ A powerful, interactive, and visually stunning pipeline builder. Built with Reac
 ## 🚀 Features
 
 ### ✨ Frontend (React)
+
 - **Unified Node Architecture**: All nodes use a shared `BaseNode` design for consistency but support specialized logic.
 - **9 Specialized Nodes**:
   - **Input / Output**: Standard entry and exit points.
@@ -20,11 +21,13 @@ A powerful, interactive, and visually stunning pipeline builder. Built with Reac
 - **Clean Workspace**: A rounded-corner contained canvas for better focus.
 
 ### ⚙️ Backend (FastAPI)
+
 - **DAG Validation**: Checks if the constructed pipeline forms a Directed Acyclic Graph using Kahn's algorithm.
 - **Pipeline Parser**: Analyzes node and edge counts sent from the frontend.
 - **CORS Enabled**: Ready for local development and communication.
 
 ## 🛠️ Tech Stack
+
 - **Frontend**: React, React Flow, Zustand (State Management), Vanilla CSS.
 - **Backend**: Python, FastAPI, Pydantic.
 - **Icons**: Custom SVG/PNG assets for all node types.
@@ -32,10 +35,12 @@ A powerful, interactive, and visually stunning pipeline builder. Built with Reac
 ## 🏃 How to Run the Project
 
 ### 1. Prerequisites
+
 - Node.js (v16+)
 - Python (v3.9+)
 
 ### 2. Backend Setup
+
 ```bash
 cd backend
 python -m venv venv
@@ -47,21 +52,26 @@ source venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
-*Backend will run on `http://localhost:8000`*
+
+_Backend will run on `http://localhost:8000`_
 
 ### 3. Frontend Setup
+
 ```bash
 cd frontend
 npm install
 npm start
 ```
-*Frontend will run on `http://localhost:3000`*
+
+_Frontend will run on `http://localhost:3000`_
 
 ## 📁 Project Structure
+
 - `frontend/src/nodes/`: Custom node logic and styling.
 - `frontend/src/assets/`: Iconography and visual assets.
 - `frontend/src/store.js`: Zustand store with history tracking.
 - `backend/main.py`: FastAPI endpoints and DAG algorithm.
 
 ---
+
 **Problem Statement Reference**: This project fulfills the technical assessment for building a modular, abstract, and functional pipeline UI with a backend DAG check.
