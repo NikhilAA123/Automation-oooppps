@@ -14,18 +14,10 @@ import { useState, useEffect } from "react";
 import { Handle, Position } from "reactflow";
 import { BaseNode } from "./BaseNode";
 import { useStore } from "../store";
-import { shallow } from "zustand/shallow";
-
-// Select only what is needed from the global store
-// This minimizes re-renders and improves performance
-const selector = (state) => ({
-  updateNodeField: state.updateNodeField,
-});
 
 export const InputNode = ({ id, data }) => {
   // Access global state update function
-  // Used to persist node configuration inside the pipeline store
-  const { updateNodeField } = useStore(selector, shallow);
+  const updateNodeField = useStore((state) => state.updateNodeField);
 
   // ---------------------------------------------------------------------------
   // Local UI state
