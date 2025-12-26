@@ -5,7 +5,6 @@
 import { useCallback, useRef, useState, useEffect } from "react";
 import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
 import { useStore } from "./store";
-import { shallow } from "zustand/shallow";
 
 import { InputNode } from "./nodes/inputNode";
 import { LLMNode } from "./nodes/llmNode";
@@ -41,45 +40,26 @@ const edgeTypes = {
 };
 
 // Zustand selector to extract necessary state and actions
-const selector = (state) => ({
-  nodes: state.nodes,
-  edges: state.edges,
-  getNodeID: state.getNodeID,
-  addNode: state.addNode,
-  onNodesChange: state.onNodesChange,
-  onEdgesChange: state.onEdgesChange,
-  onConnect: state.onConnect,
-  undo: state.undo,
-  redo: state.redo,
-  clearCanvas: state.clearCanvas,
-  pipelineName: state.pipelineName,
-  setPipelineName: state.setPipelineName,
-  past: state.past,
-  future: state.future,
-});
-
 export const PipelineUI = () => {
   const wrapperRef = useRef(null); // Reference to the canvas wrapper div
   const [rfInstance, setRfInstance] = useState(null); // React Flow instance for projecting coordinates
   const [zoom, setZoom] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const {
-    nodes,
-    edges,
-    getNodeID,
-    addNode,
-    onNodesChange,
-    onEdgesChange,
-    onConnect,
-    undo,
-    redo,
-    clearCanvas,
-    pipelineName,
-    setPipelineName,
-    past,
-    future,
-  } = useStore(selector, shallow);
+  const nodes = useStore((state) => state.nodes);
+  const edges = useStore((state) => state.edges);
+  const getNodeID = useStore((state) => state.getNodeID);
+  const addNode = useStore((state) => state.addNode);
+  const onNodesChange = useStore((state) => state.onNodesChange);
+  const onEdgesChange = useStore((state) => state.onEdgesChange);
+  const onConnect = useStore((state) => state.onConnect);
+  const undo = useStore((state) => state.undo);
+  const redo = useStore((state) => state.redo);
+  const clearCanvas = useStore((state) => state.clearCanvas);
+  const pipelineName = useStore((state) => state.pipelineName);
+  const setPipelineName = useStore((state) => state.setPipelineName);
+  const past = useStore((state) => state.past);
+  const future = useStore((state) => state.future);
 
   const [savingStatus, setSavingStatus] = useState("saved"); // 'saved' or 'saving'
   const [lastSaved, setLastSaved] = useState(new Date().toLocaleTimeString());
