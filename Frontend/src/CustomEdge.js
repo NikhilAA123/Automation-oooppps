@@ -3,12 +3,6 @@
 
 import { getBezierPath, EdgeLabelRenderer, BaseEdge } from 'reactflow';
 import { useStore } from './store';
-import { shallow } from 'zustand/shallow';
-
-const selector = (state) => ({
-    edges: state.edges,
-    onEdgesChange: state.onEdgesChange,
-});
 
 export const CustomEdge = ({
     id,
@@ -21,7 +15,7 @@ export const CustomEdge = ({
     style = {},
     markerEnd,
 }) => {
-    const { onEdgesChange } = useStore(selector, shallow);
+    const onEdgesChange = useStore((state) => state.onEdgesChange);
 
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX,
