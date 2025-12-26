@@ -83,6 +83,39 @@ The application is deployed on an **AWS EKS Cluster** using a modern, scalable a
 3.  **Deploy**: Kubernetes manifests in `k8s/` are applied to the cluster.
 4.  **Rollout**: `kubectl rollout restart` ensures the cluster pulls the latest images from ECR.
 
+## 💰 Cost Optimization & Hibernation
+
+To save AWS credits when not using the application, you can scale the cluster down to zero.
+
+### 🛑 Hibernation (Scale Down)
+Run these commands to stop all billing for worker nodes:
+```powershell
+# 1. Scale pods to 0
+kubectl scale deployment frontend --replicas=0
+kubectl scale deployment backend --replicas=0
+
+# 2. Scale nodes to 0
+eksctl scale nodegroup --cluster=pipeline-cluster --name=standard-nodes --nodes=0 --nodes-min=0
+```
+
+### 🚀 Wake Up (Scale Up)
+Run these to make the application live again:
+```powershell
+# 1. Scale nodes back up (Wait 2-3 mins after this)
+eksctl scale nodegroup --cluster=pipeline-cluster --name=standard-nodes --nodes=2 --nodes-min=1
+
+# 2. Scale pods back up
+kubectl scale deployment frontend --replicas=1
+kubectl scale deployment backend --replicas=1
+```
+
+### 🔍 Verification
+Confirm everything is off:
+```powershell
+kubectl get pods  # Should be empty
+kubectl get nodes # Should be empty or No resources found
+```
+
 ## 📁 Project Structure
 
 - `frontend/`: React application using React Flow and Zustand.
