@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - <LOADBALANCER_IP>.nip.io
+    - 34.197.168.162.nip.io
     secretName: application-tls
   rules:
-  - host: <LOADBALANCER_IP>.nip.io
+  - host: 34.197.168.162.nip.io
     http:
       paths:
       - path: /
