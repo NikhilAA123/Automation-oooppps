@@ -65,13 +65,30 @@ npm start
 
 _Frontend will run on `http://localhost:3000`_
 
+## 🏢 Architecture & Deployment
+
+### Infrastructure (AWS EKS)
+
+The application is deployed on an **AWS EKS Cluster** using a modern, scalable architecture:
+
+- **Ingress Controller**: [NGINX Ingress](https://kubernetes.github.io/ingress-nginx/) manages external traffic.
+- **SSL/TLS**: [Cert-Manager](https://cert-manager.io/) automatically issues Let's Encrypt certificates.
+- **DNS**: Uses `nip.io` for dynamic IP-based hostnames (e.g., `34.197.168.162.nip.io`).
+- **Container Registry**: Images are stored in **Amazon ECR**.
+
+### CI/CD Workflow
+
+1.  **Build**: Docker images are built for both `frontend/` and `backend/`.
+2.  **Tag & Push**: Images are tagged as `latest` and pushed to project-specific ECR repositories.
+3.  **Deploy**: Kubernetes manifests in `k8s/` are applied to the cluster.
+4.  **Rollout**: `kubectl rollout restart` ensures the cluster pulls the latest images from ECR.
+
 ## 📁 Project Structure
 
-- `frontend/src/nodes/`: Custom node logic and styling.
-- `frontend/src/assets/`: Iconography and visual assets.
-- `frontend/src/store.js`: Zustand store with history tracking.
-- `backend/main.py`: FastAPI endpoints and DAG algorithm.
+- `frontend/`: React application using React Flow and Zustand.
+- `backend/`: FastAPI server for DAG validation and pipeline parsing.
+- `k8s/`: Kubernetes manifests (Deployment, Service, Ingress, ClusterIssuer).
 
 ---
 
-**Problem Statement Reference**: This project fulfills the technical assessment for building a modular, abstract, and functional pipeline UI with a backend DAG check.
+**Built with ❤️ for the VectorShift Technical Assessment.**

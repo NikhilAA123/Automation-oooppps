@@ -1,70 +1,44 @@
-# Getting Started with Create React App
+# 🎨 AutoNoCode Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the React-based frontend for the AutoNoCode Pipeline Builder. It is built using **React Flow** for the canvas and **Zustand** for state management.
 
-## Available Scripts
+## 🚀 Getting Started
 
-In the project directory, you can run:
+### 1. Installation
+```bash
+npm install
+```
 
-### `npm start`
+### 2. Development
+Run the development server with local proxy to the backend:
+```bash
+npm start
+```
+_The app will be available at `http://localhost:3000`. API calls are proxied to `http://localhost:8000` via `package.json` configurations._
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 3. Production Build
+```bash
+npm run build
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🏗️ Architecture
 
-### `npm test`
+### Node System
+All nodes inherit from a `BaseNode` component, which handles:
+- Consistent header styling and icons.
+- Deletion logic and confirmation dialogs.
+- Minimize/Maximize functionality.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### State Management (Zustand)
+We use Zustand to manage:
+- Node and edge state.
+- **Undo/Redo** functionality (History tracking).
+- Global actions like `clearCanvas` and `addNode`.
 
-### `npm run build`
+### API Integration
+Communication with the FastAPI backend is handled using **relative paths** (e.g., `/pipelines/parse`). This allows the same frontend build to work across different environments (local dev, EKS, etc.) without code changes.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🛠️ Key Technologies
+- **React Flow**: Highly customizable library for building node-based editors.
+- **Zustand**: Fast and scalable state management.
+- **Vanilla CSS**: Clean and modular styling.
