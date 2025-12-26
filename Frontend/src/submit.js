@@ -3,20 +3,15 @@
 // Sends pipeline data to backend and displays the analysis results.
 
 import { useStore } from "./store";
-import { shallow } from "zustand/shallow";
-
-const selector = (state) => ({
-  nodes: state.nodes,
-  edges: state.edges,
-});
 
 export const SubmitButton = () => {
-  const { nodes, edges } = useStore(selector, shallow);
+  const nodes = useStore((state) => state.nodes);
+  const edges = useStore((state) => state.edges);
 
   const handleSubmit = async () => {
     try {
       // Send nodes and edges to backend
-      const response = await fetch("http://localhost:8000/pipelines/parse", {
+      const response = await fetch("/pipelines/parse", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
