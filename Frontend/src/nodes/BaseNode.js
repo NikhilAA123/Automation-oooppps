@@ -11,23 +11,15 @@
 
 import { useState } from "react";
 import { useStore } from "../store"; // Zustand store for global state
-import { shallow } from "zustand/shallow"; // Prevents unnecessary re-renders
 
 // Import UI icons
 import maximizeIcon from "../assets/maximize-icon.png";
 import minimizeIcon from "../assets/minimize-icon.png";
 
-// Selector pattern:
-// We only subscribe to removeNode to keep re-renders minimal
-const selector = (state) => ({
-  removeNode: state.removeNode,
-});
-
 // BaseNode component
 export const BaseNode = ({ id, title, icon, children, handles }) => {
   // Get removeNode action from global Zustand store
-  // Node deletion is handled centrally (important for undo/redo & consistency)
-  const { removeNode } = useStore(selector, shallow);
+  const removeNode = useStore((state) => state.removeNode);
 
   // Local UI-only state
   // These do NOT belong in global store
