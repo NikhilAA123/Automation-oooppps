@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { DraggableNode } from "./draggableNode";
 import { useStore } from "./store";
-import { shallow } from "zustand/shallow";
 
 // Import node icons
 import llmIcon from "./assets/llm-icon.png";
@@ -15,14 +14,10 @@ import apiIcon from "./assets/api-icon.png";
 import minimizeIcon from "./assets/minimize-icon.png";
 import maximizeIcon from "./assets/maximize-icon.png";
 
-const selector = (state) => ({
-  addNode: state.addNode,
-  getNodeID: state.getNodeID,
-  nodes: state.nodes,
-});
-
 export const PipelineToolbar = () => {
-  const { addNode, getNodeID, nodes } = useStore(selector, shallow);
+  const addNode = useStore((state) => state.addNode);
+  const getNodeID = useStore((state) => state.getNodeID);
+  const nodes = useStore((state) => state.nodes);
   const [isHovered, setIsHovered] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
