@@ -1,11 +1,19 @@
 // ui.js
-// Main UI component for the pipeline builder. 
-// Sets up the React Flow canvas, handles drag-and-drop interactions, and renders UI overlays.
+// -----------------------------------------------------------------------------
+// Commit: Orchestrated the React Flow canvas and interaction layer.
+// Purpose: 
+// - Initializes the React Flow environment with custom node and edge types.
+// - Handles drag-and-drop operations for adding new elements to the graph.
+// - Provides a top-level layout with a fixed header for global actions.
+// - Implements UI overlays such as a search-based node selector and zoom indicators.
+// - Manages local UI states like 'saving' status and modal visibility.
+// -----------------------------------------------------------------------------
 
 import { useCallback, useRef, useState, useEffect } from "react";
 import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
 import { useStore } from "./store";
 
+// Import custom node components
 import { InputNode } from "./nodes/inputNode";
 import { LLMNode } from "./nodes/llmNode";
 import { OutputNode } from "./nodes/outputNode";
@@ -17,11 +25,16 @@ import { DelayNode } from "./nodes/DelayNode";
 import { ConditionNode } from "./nodes/ConditionNode";
 import { CustomEdge } from "./CustomEdge";
 
+// Core React Flow styling
 import "reactflow/dist/style.css";
 
-const HEADER_HEIGHT = 100; // Enlarged header area to reduce canvas coverage proportion
+const HEADER_HEIGHT = 100; // Height of the fixed top navigation/toolbar area
 
-// Mapping of node types to their respective React components
+/**
+ * nodeTypes
+ * Mapping of internal type identifiers to their corresponding React components.
+ * These are injected into the ReactFlow instance.
+ */
 const nodeTypes = {
   customInput: InputNode,
   llm: LLMNode,
@@ -34,18 +47,25 @@ const nodeTypes = {
   condition: ConditionNode,
 };
 
-// Custom edge types with delete button
+/**
+ * edgeTypes
+ * Custom edge renderers, currently providing a delete button overlay.
+ */
 const edgeTypes = {
   custom: CustomEdge,
 };
 
-// Zustand selector to extract necessary state and actions
+/**
+ * PipelineUI Component
+ * The primary visual workspace for building pipelines.
+ */
 export const PipelineUI = () => {
-  const wrapperRef = useRef(null); // Reference to the canvas wrapper div
-  const [rfInstance, setRfInstance] = useState(null); // React Flow instance for projecting coordinates
-  const [zoom, setZoom] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const wrapperRef = useRef(null); // Reference used to calculate drop positions
+  const [rfInstance, setRfInstance] = useState(null); // Local storage for the React Flow project functions
+  const [zoom, setZoom] = useState(1); // Tracks current viewport zoom for the overlay
+  const [isModalOpen, setIsModalOpen] = useState(false); // Controls the central node selector modal
 
+  // --- Store Subscriptions ---
   const nodes = useStore((state) => state.nodes);
   const edges = useStore((state) => state.edges);
   const getNodeID = useStore((state) => state.getNodeID);
@@ -61,10 +81,14 @@ export const PipelineUI = () => {
   const past = useStore((state) => state.past);
   const future = useStore((state) => state.future);
 
+  // --- Local UI logic for 'Saving' feedback ---
   const [savingStatus, setSavingStatus] = useState("saved"); // 'saved' or 'saving'
   const [lastSaved, setLastSaved] = useState(new Date().toLocaleTimeString());
 
-  // Debounced effect to simulate auto-saving when workspace changes
+  /**
+   * Auto-save Effect
+   * Simulates a cloud-saving behavior by debouncing changes to the graph.
+   */
   useEffect(() => {
     if (nodes.length > 0 || edges.length > 0) {
       setSavingStatus("saving");
@@ -77,8 +101,9 @@ export const PipelineUI = () => {
   }, [nodes, edges]);
 
   /**
-   * Handles dropping a dragged node onto the canvas.
-   * Calculates the position based on the mouse event and adds the node to the store.
+   * onDrop
+   * Native HTML Drag and Drop handler. Converts client coordinates to 
+   * the internal coordinate system of the React Flow canvas.
    */
   const onDrop = useCallback(
     (event) => {
@@ -110,7 +135,10 @@ export const PipelineUI = () => {
     [rfInstance, addNode, getNodeID]
   );
 
-  // Export pipeline as JSON file
+  /**
+   * downloadPipeline
+   * Serializes the current graph to a JSON file for local backup/portability.
+   */
   const downloadPipeline = () => {
     const data = { nodes, edges, pipelineName };
     const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
@@ -122,14 +150,21 @@ export const PipelineUI = () => {
     link.click();
   };
 
+  /**
+   * onDragOver
+   * Required for native drag/drop compatibility.
+   */
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  /**
+   * handleModalAddNode
+   * Adds a node via the modal picker (non-drag interaction).
+   */
   const handleModalAddNode = (type) => {
     const id = getNodeID(type);
-    // Center-ish position
     const position = { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 50 };
 
     addNode({
@@ -141,7 +176,10 @@ export const PipelineUI = () => {
     setIsModalOpen(false);
   };
 
-  // Shared button style for header actions
+  /**
+   * headerBtnStyle
+   * Shared styling generator for header action buttons.
+   */
   const headerBtnStyle = (disabled) => ({
     padding: "6px 12px",
     borderRadius: 6,
@@ -160,7 +198,11 @@ export const PipelineUI = () => {
 
   return (
     <>
-      {/* Page Heading & Controls */}
+      {/* -----------------------------------------------------------------
+          Top Fixed Header
+          - Pipeline Name editing
+          - Global actions: Undo, Redo, Export, Clear
+          ----------------------------------------------------------------- */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -176,7 +218,7 @@ export const PipelineUI = () => {
         zIndex: 1000,
         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
       }}>
-        {/* Left - Title */}
+        {/* Pipeline Title Input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <input
             type="text"
@@ -202,9 +244,9 @@ export const PipelineUI = () => {
           />
         </div>
 
-        {/* Center/Right - Controls */}
+        {/* Global Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Undo/Redo Group */}
+          {/* History Controls */}
           <div style={{ display: 'flex', gap: 4, borderRight: '1px solid #e2e8f0', paddingRight: 12, marginRight: 4 }}>
             <button
               onClick={undo}
@@ -224,7 +266,7 @@ export const PipelineUI = () => {
             </button>
           </div>
 
-          {/* Utility Group */}
+          {/* Export & Cleanup */}
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={downloadPipeline}
@@ -249,7 +291,10 @@ export const PipelineUI = () => {
         </div>
       </div>
 
-      {/* Main Canvas Wrapper */}
+      {/* -----------------------------------------------------------------
+          Main Workspace Area
+          - Contains the React Flow canvas with Background, Controls, and MiniMap
+          ----------------------------------------------------------------- */}
       <div
         ref={wrapperRef}
         style={{
@@ -265,18 +310,18 @@ export const PipelineUI = () => {
           overflow: 'hidden'
         }}
       >
-        {/* 'Draft saved' indicator */}
+        {/* Status indicator (Floating) */}
         <div
           style={{
             position: "fixed",
-            top: 24, // Move it up to the header area
-            right: 120, // Next to the submit button area/offset
+            top: 24,
+            right: 120,
             fontSize: 12,
             color: savingStatus === "saving" ? "#6366f1" : "#16a34a",
             display: "flex",
             alignItems: "center",
             gap: 6,
-            zIndex: 1100, // Make sure it's above the header
+            zIndex: 1100,
             fontWeight: 500,
             background: "#fff",
             padding: "4px 10px",
@@ -297,7 +342,6 @@ export const PipelineUI = () => {
           {savingStatus === "saving" ? "Saving..." : `Draft saved at ${lastSaved}`}
         </div>
 
-        {/* Pulse animation for saving state */}
         <style>
           {`
             @keyframes pulse {
@@ -308,7 +352,7 @@ export const PipelineUI = () => {
           `}
         </style>
 
-        {/* Empty State Call-to-Action */}
+        {/* Empty state CTA */}
         {nodes.length === 0 && (
           <div
             className="add-node-btn"
@@ -318,12 +362,12 @@ export const PipelineUI = () => {
           </div>
         )}
 
-        {/* Zoom Percentage Indicator */}
+        {/* Zoom Indicator */}
         <div
           style={{
             position: "fixed",
-            bottom: 120, // Positioned above the controls
-            right: 230,  // Aligned with the controls
+            bottom: 120,
+            right: 230,
             fontSize: 12,
             background: "#ffffff",
             padding: "4px 8px",
@@ -335,7 +379,7 @@ export const PipelineUI = () => {
           {Math.round(zoom * 100)}%
         </div>
 
-        {/* React Flow Canvas */}
+        {/* The React Flow Engine */}
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -356,7 +400,10 @@ export const PipelineUI = () => {
         </ReactFlow>
       </div>
 
-      {/* Node Selection Modal */}
+      {/* -----------------------------------------------------------------
+          Node Selection Modal
+          - Provides a card-based UI for discovering and adding nodes
+          ----------------------------------------------------------------- */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -365,7 +412,6 @@ export const PipelineUI = () => {
               <span onClick={() => setIsModalOpen(false)} style={{ cursor: 'pointer', fontSize: 18 }}>✕</span>
             </div>
             <div className="modal-body">
-              {/* Card Options */}
               <div className="modal-option-card" onClick={() => handleModalAddNode('customInput')}>
                 <div className="modal-option-title">Input Node</div>
                 <div className="modal-option-desc">Start your workflow with an input. Pass values like text or files.</div>
@@ -382,7 +428,6 @@ export const PipelineUI = () => {
                 <div className="modal-option-title">Text / Template</div>
                 <div className="modal-option-desc">Add static text or use variables for templating.</div>
               </div>
-              {/* Dummy Nodes */}
               <div className="modal-option-card" onClick={() => handleModalAddNode('api')}>
                 <div className="modal-option-title">API Node</div>
                 <div className="modal-option-desc">Connect your workflow to external services and APIs.</div>
@@ -406,3 +451,4 @@ export const PipelineUI = () => {
     </>
   );
 };
+
