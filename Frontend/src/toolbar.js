@@ -1,11 +1,18 @@
 // toolbar.js
-// Floating toolbar with icons matching VectorShift design.
+// -----------------------------------------------------------------------------
+// Commit: Implemented floating node-injection toolbar with search.
+// Purpose: 
+// - Provides a quick-access menu for dragging or clicking to add nodes.
+// - Features a search/filter to handle an expanding list of node types.
+// - Uses staggered diagonal positioning for clicked nodes to prevent overlap.
+// - Integrates custom icons for a premium VectorShift-inspired aesthetic.
+// -----------------------------------------------------------------------------
 
 import { useState } from "react";
 import { DraggableNode } from "./draggableNode";
 import { useStore } from "./store";
 
-// Import node icons
+// Import UI-specific assets
 import llmIcon from "./assets/llm-icon.png";
 import mathIcon from "./assets/math-icon.png";
 import conditionIcon from "./assets/condition-icon.png";
@@ -14,16 +21,23 @@ import apiIcon from "./assets/api-icon.png";
 import minimizeIcon from "./assets/minimize-icon.png";
 import maximizeIcon from "./assets/maximize-icon.png";
 
+/**
+ * PipelineToolbar Component
+ * A floating UI element that serves as the primary source for new nodes.
+ */
 export const PipelineToolbar = () => {
   const addNode = useStore((state) => state.addNode);
   const getNodeID = useStore((state) => state.getNodeID);
   const nodes = useStore((state) => state.nodes);
-  const [isHovered, setIsHovered] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // Node options with icons
-  // Using minimize icon for Input (data coming in)
-  // Using maximize icon for Output (data going out)
+  // --- Local UI State ---
+  const [isHovered, setIsHovered] = useState(false); // Controls expansion of the menu
+  const [searchQuery, setSearchQuery] = useState(""); // Filters the node options
+
+  /**
+   * nodeOptions
+   * Catalog of all available nodes in the system.
+   */
   const nodeOptions = [
     { type: "customInput", label: "Input", icon: minimizeIcon },
     { type: "llm", label: "LLM", icon: llmIcon },
@@ -36,16 +50,20 @@ export const PipelineToolbar = () => {
     { type: "condition", label: "Condition", icon: conditionIcon },
   ];
 
+  // Logic for search filtering
   const filteredNodes = nodeOptions.filter((node) =>
     node.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handler to add node on click (staggered diagonal queue positioning)
+  /**
+   * handleAddNode
+   * Adds a node via click instead of drag.
+   * Calculates a staggered offset to ensure new nodes are visible and not stacked.
+   */
   const handleAddNode = (type) => {
     const newId = getNodeID(type);
 
-    // Calculate position based on current number of nodes for a "queue" effect
-    // This avoids random overlapping and creates a neat progression
+    // Dynamic position calculation for a "scatter" or "queue" effect
     const offset = nodes.length * 40;
     const x = 300 + offset;
     const y = 80 + offset;
@@ -62,14 +80,16 @@ export const PipelineToolbar = () => {
     <div
       style={{
         position: "fixed",
-        top: 30, // Centered in the 100px header
+        top: 30, // Aligned with the header area
         left: 12,
-        zIndex: 1100, // Higher than header's 1000
+        zIndex: 1100,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Plus Button */}
+      {/* -----------------------------------------------------------------
+          Trigger Button (Plus Icon)
+          ----------------------------------------------------------------- */}
       <div
         style={{
           width: 40,
@@ -88,8 +108,8 @@ export const PipelineToolbar = () => {
           lineHeight: 1,
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#eef2ff"; // Light blue background
-          e.currentTarget.style.color = "#6366f1";      // Indigo/blue icon
+          e.currentTarget.style.background = "#eef2ff";
+          e.currentTarget.style.color = "#6366f1";
           e.currentTarget.style.borderColor = "#c7d2fe";
         }}
         onMouseLeave={(e) => {
@@ -101,7 +121,10 @@ export const PipelineToolbar = () => {
         <span style={{ marginBottom: 4 }}>+</span>
       </div>
 
-      {/* Expanded Menu */}
+      {/* -----------------------------------------------------------------
+          Expanded Search & Node List
+          - Dynamically rendered on hover
+          ----------------------------------------------------------------- */}
       {isHovered && (
         <div
           style={{
@@ -118,7 +141,7 @@ export const PipelineToolbar = () => {
             flexDirection: "column",
           }}
         >
-          {/* Search Input */}
+          {/* Search bar for quick discovery */}
           <input
             type="text"
             className="toolbar-search"
@@ -127,7 +150,7 @@ export const PipelineToolbar = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
 
-          {/* Node List - 2 Column Grid */}
+          {/* Renderable Node Icons in 2-column grid */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(2, 1fr)',
@@ -155,3 +178,4 @@ export const PipelineToolbar = () => {
     </div>
   );
 };
+
