@@ -1,14 +1,30 @@
 // draggableNode.js
-// Toolbar node button with uniform sizing matching VectorShift design.
+// -----------------------------------------------------------------------------
+// Commit: Built reusable draggable component for the node library.
+// Purpose: 
+// - Encapsulates the native HTML5 Drag and Drop logic for React Flow.
+// - Provides a consistent UI for all node types in the sidebar/toolbar.
+// - Supports both image-based and emoji-based icons for varied node types.
+// - Includes hover and grab interaction states for better tactile feedback.
+// -----------------------------------------------------------------------------
 
+/**
+ * DraggableNode Component
+ * A wrapper for any node type that allows it to be dragged from the toolbar onto the canvas.
+ */
 export const DraggableNode = ({ type, label, icon, onClick }) => {
+  /**
+   * onDragStart
+   * Serializes the node type into the drag event's dataTransfer object.
+   * This is read by the destination (PipelineUI) during the 'drop' event.
+   */
   const onDragStart = (event) => {
     // Send data as JSON object with nodeType key (expected by ui.js onDrop)
     event.dataTransfer.setData("application/reactflow", JSON.stringify({ nodeType: type }));
     event.dataTransfer.effectAllowed = "move";
   };
 
-  // Check if icon is emoji (short string) or image path
+  // Helper: Detects if the icon is a simple emoji string or a path to an asset
   const isEmoji = typeof icon === 'string' && icon.length <= 2;
 
   return (
@@ -31,6 +47,7 @@ export const DraggableNode = ({ type, label, icon, onClick }) => {
         transition: "all 0.15s",
         minHeight: 36,
       }}
+      // Visual feedback on hover
       onMouseEnter={(e) => {
         e.currentTarget.style.background = "#f8fafc";
         e.currentTarget.style.borderColor = "#6366f1";
@@ -40,7 +57,7 @@ export const DraggableNode = ({ type, label, icon, onClick }) => {
         e.currentTarget.style.borderColor = "#e2e8f0";
       }}
     >
-      {/* Icon */}
+      {/* Icon rendering logic */}
       {icon && (
         isEmoji ? (
           <span style={{ fontSize: 14 }}>{icon}</span>
@@ -48,8 +65,9 @@ export const DraggableNode = ({ type, label, icon, onClick }) => {
           <img src={icon} alt="" style={{ width: 16, height: 16 }} />
         )
       )}
-      {/* Label */}
+      {/* Node Label */}
       <span>{label}</span>
     </div>
   );
 };
+
