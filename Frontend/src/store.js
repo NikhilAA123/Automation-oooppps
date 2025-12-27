@@ -1,7 +1,12 @@
 // store.js
-// State management using Zustand for the React Flow application.
-// Handles nodes, edges, and their interactions (add, remove, connect, update).
-// Includes history tracking (Undo/Redo) and utility actions.
+// -----------------------------------------------------------------------------
+// Commit: Centralized state management for the Pipeline Builder.
+// Purpose: 
+// - Manages nodes and edges using Zustand for high-performance React updates.
+// - Implements Kahn's algorithm-ready data structure for DAG validation.
+// - Provides Undo/Redo history and utility actions like branching or clearing.
+// - Handles typed connections and validation feedback.
+// -----------------------------------------------------------------------------
 
 import { create } from "zustand";
 import {
@@ -11,27 +16,39 @@ import {
   MarkerType,
 } from 'reactflow';
 
+/**
+ * useStore
+ * Global state hook containing the entire pipeline definition and actions.
+ */
 export const useStore = create((set, get) => ({
+  // --- Core State ---
   nodes: [],
   edges: [],
-  nodeIDs: {}, // Track counts for each node type
+  nodeIDs: {}, // Track auto-incrementing counts for each node type
   pipelineName: "Untitled Pipeline",
 
-  // History state
+  // --- History State (Undo/Redo) ---
   past: [],
   future: [],
 
-  // Helper to save current state to history before a change
+  /**
+   * saveToHistory
+   * Snapshots the current workflow state into the 'past' stack before modifications.
+   */
   saveToHistory: () => {
     const { nodes, edges } = get();
     set({
       past: [...get().past, { nodes, edges }],
-      future: [], // Clear future on new action
+      future: [], // Clear redo history on any new user action
     });
   },
 
   setPipelineName: (name) => set({ pipelineName: name }),
 
+  /**
+   * getNodeID
+   * Generates a unique, readable ID for a node based on its type (e.g., 'llm-1').
+   */
   getNodeID: (type) => {
     const newIDs = { ...get().nodeIDs };
     if (newIDs[type] === undefined) {
@@ -42,6 +59,10 @@ export const useStore = create((set, get) => ({
     return `${type}-${newIDs[type]}`;
   },
 
+  /**
+   * addNode
+   * Inserts a new node into the workspace with history tracking.
+   */
   addNode: (node) => {
     get().saveToHistory();
     set({
@@ -49,32 +70,46 @@ export const useStore = create((set, get) => ({
     });
   },
 
+  /**
+   * onNodesChange
+   * Built-in React Flow handler for node movements, selections, and removals.
+   */
   onNodesChange: (changes) => {
-    // Only save to history if it's a structural change (not just position/dragging for noise reduction)
-    // Actually, for simplicity, let's just save.
     set({
       nodes: applyNodeChanges(changes, get().nodes),
     });
   },
 
+  /**
+   * onEdgesChange
+   * Built-in React Flow handler for edge interactions.
+   */
   onEdgesChange: (changes) => {
     set({
       edges: applyEdgeChanges(changes, get().edges),
     });
   },
 
+  /**
+   * onConnect
+   * Logic for creating a new connection between handles.
+   * Includes type-mismatch detection and styling.
+   */
   onConnect: (connection) => {
     get().saveToHistory();
     const { source, target } = connection;
     const nodes = get().nodes;
 
+    // Find nodes involved in the connection for type checking
     const sourceNode = nodes.find((node) => node.id === source);
     const targetNode = nodes.find((node) => node.id === target);
 
+    // Simple type matching logic (defaults to 'Text' if not specified)
     const sourceType = sourceNode?.data?.inputType || sourceNode?.data?.outputType || 'Text';
     const targetType = targetNode?.data?.inputType || targetNode?.data?.outputType || 'Text';
     const isTypeMismatch = sourceType !== targetType;
 
+    // Define visual style based on compatibility
     const edgeOptions = isTypeMismatch
       ? {
         type: 'custom',
@@ -94,8 +129,11 @@ export const useStore = create((set, get) => ({
     });
   },
 
+  /**
+   * updateNodeField
+   * Updates a specific data field within a node (e.g., changing a URL or selection).
+   */
   updateNodeField: (nodeId, fieldName, fieldValue) => {
-    // No history for field typing to avoid bloat, save on blur or explicit actions if needed
     set({
       nodes: get().nodes.map((node) => {
         if (node.id === nodeId) {
@@ -106,6 +144,10 @@ export const useStore = create((set, get) => ({
     });
   },
 
+  /**
+   * removeNode
+   * Safely deletes a node and all its associated edges.
+   */
   removeNode: (nodeId) => {
     get().saveToHistory();
     set({
@@ -114,7 +156,7 @@ export const useStore = create((set, get) => ({
     });
   },
 
-  // --- Advanced Utility Actions ---
+  // --- History Navigation ---
 
   undo: () => {
     const { past, nodes, edges, future } = get();
@@ -146,6 +188,10 @@ export const useStore = create((set, get) => ({
     });
   },
 
+  /**
+   * clearCanvas
+   * Wipes the entire workspace to reset for a new project.
+   */
   clearCanvas: () => {
     if (window.confirm("Are you sure you want to clear the entire workspace? This cannot be undone.")) {
       get().saveToHistory();
@@ -156,3 +202,4 @@ export const useStore = create((set, get) => ({
     }
   },
 }));
+
