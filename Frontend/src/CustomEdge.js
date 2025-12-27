@@ -1,9 +1,20 @@
 // CustomEdge.js
-// Custom edge component with a delete button in the middle.
+// -----------------------------------------------------------------------------
+// Commit: Enhanced interactive edge component for React Flow.
+// Purpose: 
+// - Renders a Bézier path representing the connection between nodes.
+// - Provides a centered 'delete' button for intuitive connection removal.
+// - Integrates with the global Zustand store to manage edge state changes.
+// - Includes hover effects for improved user feedback.
+// -----------------------------------------------------------------------------
 
 import { getBezierPath, EdgeLabelRenderer, BaseEdge } from 'reactflow';
 import { useStore } from './store';
 
+/**
+ * CustomEdge Component
+ * An interactive connection line between nodes with a built-in delete action.
+ */
 export const CustomEdge = ({
     id,
     sourceX,
@@ -15,8 +26,10 @@ export const CustomEdge = ({
     style = {},
     markerEnd,
 }) => {
+    // Access onEdgesChange from store to allow edge deletion
     const onEdgesChange = useStore((state) => state.onEdgesChange);
 
+    // Calculate the Bézier path and the center position for the label/button
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX,
         sourceY,
@@ -26,21 +39,29 @@ export const CustomEdge = ({
         targetPosition,
     });
 
+    /**
+     * handleDeleteEdge
+     * Triggers the removal of this edge from the React Flow canvas.
+     */
     const handleDeleteEdge = () => {
         onEdgesChange([{ type: 'remove', id }]);
     };
 
     return (
         <>
+            {/* The actual SVG path of the edge */}
             <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+
+            {/* Render a custom label layer for the delete button */}
             <EdgeLabelRenderer>
                 <div
                     style={{
                         position: 'absolute',
                         transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-                        pointerEvents: 'all',
+                        pointerEvents: 'all', // Ensure the button is clickable
                     }}
                 >
+                    {/* Delete button centered on the edge path */}
                     <button
                         onClick={handleDeleteEdge}
                         title="Delete Connection"
@@ -78,3 +99,4 @@ export const CustomEdge = ({
         </>
     );
 };
+
