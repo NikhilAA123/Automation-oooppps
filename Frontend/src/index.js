@@ -7,18 +7,16 @@
 // - Renders the top-level App component into the DOM.
 // -----------------------------------------------------------------------------
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
+import { store } from "./store";
+import App from "./App";
 
-// Initialize the React Root at the 'root' div
-const root = ReactDOM.createRoot(document.getElementById('root'));
-
-// Render in StrictMode for development performance and safety checks
-root.render(
-  <React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <Provider store={store}>
     <App />
-  </React.StrictMode>
+  </Provider>
 );
+
 
