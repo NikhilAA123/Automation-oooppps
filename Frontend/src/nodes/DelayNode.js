@@ -3,33 +3,91 @@
 // DelayNode introduces a time-based pause in the pipeline execution.
 // It allows users to delay the flow before passing data to the next node.
 //
-// Key concepts demonstrated:
-// - Extension of BaseNode abstraction
-// - Time-based control within a workflow
-// - Controlled inputs for predictable configuration
-// - Handles always visible to preserve pipeline structure
+// Redux responsibilities:
+// - Persist delay configuration (duration + unit) in global pipeline state
+// - Enable execution engine to apply correct delay at runtime
 // -----------------------------------------------------------------------------
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Handle, Position } from "reactflow";
 import { BaseNode } from "./BaseNode";
+import { updateNodeField } from "../store/nodesSlice";
 
 export const DelayNode = ({ id, data }) => {
+  const dispatch = useDispatch();
+
   // -------------------------------------------------------------------------
-  // Local state for delay configuration
-  // - duration: numeric value of delay
+  // Local UI state
+  // - duration: numeric delay value
   // - unit: time unit (ms / s / m)
-  // These are node-specific settings, so they are kept local
+  // Local state ensures responsive UI while Redux stores pipeline definition
   // -------------------------------------------------------------------------
   const [duration, setDuration] = useState(data?.duration || 1000);
-
   const [unit, setUnit] = useState(data?.unit || "ms");
 
   // -------------------------------------------------------------------------
+  // Initialize Redux state on mount
+  // Ensures delay config always exists in pipeline state
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (!data?.duration) {
+      dispatch(
+        updateNodeField({
+          id,
+          field: "duration",
+          value: duration,
+        })
+      );
+    }
+
+    if (!data?.unit) {
+      dispatch(
+        updateNodeField({
+          id,
+          field: "unit",
+          value: unit,
+        })
+      );
+    }
+  }, [id, data, duration, unit, dispatch]);
+
+  // -------------------------------------------------------------------------
+  // Handle duration change
+  // - Updates local UI
+  // - Syncs value to Redux store
+  // -------------------------------------------------------------------------
+  const handleDurationChange = (e) => {
+    const value = Number(e.target.value);
+    setDuration(value);
+
+    dispatch(
+      updateNodeField({
+        id,
+        field: "duration",
+        value,
+      })
+    );
+  };
+
+  // -------------------------------------------------------------------------
+  // Handle unit change
+  // -------------------------------------------------------------------------
+  const handleUnitChange = (e) => {
+    const value = e.target.value;
+    setUnit(value);
+
+    dispatch(
+      updateNodeField({
+        id,
+        field: "unit",
+        value,
+      })
+    );
+  };
+
+  // -------------------------------------------------------------------------
   // React Flow Handles
-  // - Target handle (left): receives incoming data
-  // - Source handle (right): emits data after delay
-  // Handles are always rendered, even when the node is minimized.
   // -------------------------------------------------------------------------
   const handles = (
     <>
@@ -62,7 +120,6 @@ export const DelayNode = ({ id, data }) => {
       />
     </>
   );
-
   return (
     // ---------------------------------------------------------------------
     // BaseNode usage
