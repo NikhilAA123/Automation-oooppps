@@ -5,59 +5,62 @@
 //
 // Key concepts demonstrated:
 // - Clear pipeline termination point
-// - Synchronization between local UI state and global pipeline state
+// - Redux as the single source of truth for node data
 // - Reuse of BaseNode abstraction for consistency
 // - Handles always visible to preserve graph structure
 // -----------------------------------------------------------------------------
 
-import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Handle, Position } from "reactflow";
 import { BaseNode } from "./BaseNode";
-import { useStore } from "../store";
+import { updateNodeField } from "../store/nodesSlice";
 
-export const OutputNode = ({ id, data }) => {
-  // Access global state updater
-  const updateNodeField = useStore((state) => state.updateNodeField);
+export const OutputNode = ({ id }) => {
+  // ---------------------------------------------------------------------------
+  // Redux hooks
+  // ---------------------------------------------------------------------------
+  const dispatch = useDispatch();
 
-  // ---------------------------------------------------------------------------
-  // Local UI state
-  // - currName: display name for the output
-  // - outputType: type of data being produced
-  // These are kept local for responsive UI updates
-  // ---------------------------------------------------------------------------
-  const [currName, setCurrName] = useState(
-    data?.outputName || id.replace("customOutput-", "output_")
+  const nodeData = useSelector(
+    (state) => state.nodes.nodes.find((node) => node.id === id)?.data
   );
 
-  const [outputType, setOutputType] = useState(data?.outputType || "Text");
+  // ---------------------------------------------------------------------------
+  // Derived values from Redux state
+  // Redux is the single source of truth
+  // ---------------------------------------------------------------------------
+  const outputName =
+    nodeData?.outputName || id.replace("customOutput-", "output_");
 
-  // Handle output name change (UI-only)
+  const outputType = nodeData?.outputType || "Text";
+
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // - Dispatch updates directly to Redux
+  // ---------------------------------------------------------------------------
   const handleNameChange = (e) => {
-    setCurrName(e.target.value);
+    dispatch(
+      updateNodeField({
+        id,
+        field: "outputName",
+        value: e.target.value,
+      })
+    );
   };
 
-  // Handle output type change
-  // Also sync the value to the global pipeline state
   const handleTypeChange = (e) => {
-    const newType = e.target.value;
-    setOutputType(newType);
-    updateNodeField(id, "outputType", newType);
+    dispatch(
+      updateNodeField({
+        id,
+        field: "outputType",
+        value: e.target.value,
+      })
+    );
   };
-
-  // ---------------------------------------------------------------------------
-  // Ensure outputType is initialized in global state
-  // This keeps the pipeline definition consistent even if
-  // the node was created without explicit data
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (!data?.outputType) {
-      updateNodeField(id, "outputType", outputType);
-    }
-  }, [id, outputType, data?.outputType, updateNodeField]);
 
   // ---------------------------------------------------------------------------
   // React Flow Handle
-  // - Target handle (left): receives final data from upstream node
+  // - Target handle receives final data from upstream node
   // - Always rendered so connectivity is preserved when minimized
   // ---------------------------------------------------------------------------
   const handles = (
@@ -85,7 +88,6 @@ export const OutputNode = ({ id, data }) => {
     <BaseNode id={id} title="Output" handles={handles}>
       {/* ---------------------------------------------------------------------
           Description
-          - Explains the role of the Output node to the user
          --------------------------------------------------------------------- */}
       <div
         style={{
@@ -108,8 +110,7 @@ export const OutputNode = ({ id, data }) => {
 
       {/* ---------------------------------------------------------------------
           Output Name Input
-          - Allows users to label the final output
-          - Improves clarity in complex pipelines
+          - Controlled input backed by Redux
          --------------------------------------------------------------------- */}
       <div
         style={{
@@ -133,15 +134,14 @@ export const OutputNode = ({ id, data }) => {
             textAlign: "center",
             boxSizing: "border-box",
           }}
-          value={currName}
+          value={outputName}
           onChange={handleNameChange}
         />
       </div>
 
       {/* ---------------------------------------------------------------------
           Output Type Selection
-          - Defines the type of data produced by the workflow
-          - Stored in global state for downstream consumers
+          - Stored in Redux for downstream consumers
          --------------------------------------------------------------------- */}
       <div
         style={{
