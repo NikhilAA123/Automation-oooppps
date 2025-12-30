@@ -3,33 +3,65 @@
 // ConditionNode represents a decision point in the pipeline.
 // It evaluates incoming data and routes execution based on a selected condition.
 //
-// Key concepts demonstrated:
-// - Extension of BaseNode abstraction
-// - Controlled configuration via dropdown
-// - Clear separation between shared UI (BaseNode) and node-specific logic
-// - Handles always visible to preserve pipeline structure
+// Redux responsibilities:
+// - Persist conditionType in global pipeline state
+// - Allow execution engine to evaluate routing logic
 // -----------------------------------------------------------------------------
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Handle, Position } from "reactflow";
 import { BaseNode } from "./BaseNode";
+import { updateNodeField } from "../store/nodesSlice";
 import conditionIcon from "../assets/condition-icon.png";
 
 export const ConditionNode = ({ id, data }) => {
+  const dispatch = useDispatch();
+
   // -------------------------------------------------------------------------
-  // Local state for condition configuration
-  // - conditionType determines how incoming data should be evaluated
-  // - Kept local since it only affects this node’s behavior
+  // Local UI state
+  // - conditionType controls how incoming data is evaluated
+  // - Stored locally for fast UI interaction
   // -------------------------------------------------------------------------
   const [conditionType, setConditionType] = useState(
     data?.conditionType || "boolean"
   );
 
   // -------------------------------------------------------------------------
+  // Initialize Redux state on first render
+  // Ensures pipeline definition is always complete
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (!data?.conditionType) {
+      dispatch(
+        updateNodeField({
+          id,
+          field: "conditionType",
+          value: conditionType,
+        })
+      );
+    }
+  }, [id, data, conditionType, dispatch]);
+
+  // -------------------------------------------------------------------------
+  // Handle condition type change
+  // - Updates local UI
+  // - Syncs configuration to Redux store
+  // -------------------------------------------------------------------------
+  const handleConditionChange = (e) => {
+    const value = e.target.value;
+    setConditionType(value);
+    dispatch(
+      updateNodeField({
+        id,
+        field: "conditionType",
+        value,
+      })
+    );
+  };
+
+  // -------------------------------------------------------------------------
   // React Flow Handles
-  // - Target handle (left): receives input data
-  // - Source handle (right): outputs result after condition evaluation
-  // Handles are always rendered, even when the node is minimized.
   // -------------------------------------------------------------------------
   const handles = (
     <>
