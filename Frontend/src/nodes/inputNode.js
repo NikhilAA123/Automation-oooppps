@@ -4,57 +4,63 @@
 // It allows users to inject data (Text / File) into the workflow.
 //
 // Key concepts demonstrated:
-// - Reuse of BaseNode abstraction
-// - Separation of local UI state and global pipeline state
-// - Controlled inputs for predictable behavior
+// - Redux as the single source of truth for node data
+// - BaseNode abstraction for shared layout & behavior
+// - Controlled inputs backed by global state
 // - Handles always visible to preserve graph structure
 // -----------------------------------------------------------------------------
 
-import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Handle, Position } from "reactflow";
 import { BaseNode } from "./BaseNode";
-import { useStore } from "../store";
+import { updateNodeField } from "../store/nodesSlice";
 
-export const InputNode = ({ id, data }) => {
-  // Access global state update function
-  const updateNodeField = useStore((state) => state.updateNodeField);
-
+export const InputNode = ({ id }) => {
   // ---------------------------------------------------------------------------
-  // Local UI state
-  // - currName: display name for the input node
-  // - inputType: data type emitted by this node
-  // These are kept local for fast UI updates
+  // Redux hooks
+  // - useDispatch: dispatches state updates
+  // - useSelector: reads the current node data from the global store
   // ---------------------------------------------------------------------------
+  const dispatch = useDispatch();
 
-  const [currName, setCurrName] = useState(
-    data?.inputName || id.replace("customInput-", "input_")
+  const nodeData = useSelector(
+    (state) => state.nodes.nodes.find((node) => node.id === id)?.data
   );
 
-  const [inputType, setInputType] = useState(data?.inputType || "Text");
+  // ---------------------------------------------------------------------------
+  // Derived values from Redux state
+  // - These values are NOT duplicated in local state
+  // - Redux remains the single source of truth
+  // ---------------------------------------------------------------------------
+  const inputName =
+    nodeData?.inputName || id.replace("customInput-", "input_");
 
-  // Handle name change (UI-only for now)
+  const inputType = nodeData?.inputType || "Text";
+
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // - Dispatch updates directly to Redux
+  // - Keeps state predictable and debuggable
+  // ---------------------------------------------------------------------------
   const handleNameChange = (e) => {
-    setCurrName(e.target.value);
+    dispatch(
+      updateNodeField({
+        id,
+        field: "inputName",
+        value: e.target.value,
+      })
+    );
   };
 
-  // Handle input type change
-  // Also sync the value to the global pipeline state
   const handleTypeChange = (e) => {
-    const newType = e.target.value;
-    setInputType(newType);
-    updateNodeField(id, "inputType", newType);
+    dispatch(
+      updateNodeField({
+        id,
+        field: "inputType",
+        value: e.target.value,
+      })
+    );
   };
-
-  // ---------------------------------------------------------------------------
-  // Sync default inputType to global store on first render
-  // This ensures pipeline state remains consistent even if
-  // the node was created without explicit data
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (!data?.inputType) {
-      updateNodeField(id, "inputType", inputType);
-    }
-  }, [id, inputType, data?.inputType, updateNodeField]);
 
   // ---------------------------------------------------------------------------
   // React Flow Handle
@@ -86,7 +92,6 @@ export const InputNode = ({ id, data }) => {
     <BaseNode id={id} title="Input" handles={handles}>
       {/* ---------------------------------------------------------------------
           Description
-          - Brief explanation of what this node does
          --------------------------------------------------------------------- */}
       <div
         style={{
@@ -109,8 +114,7 @@ export const InputNode = ({ id, data }) => {
 
       {/* ---------------------------------------------------------------------
           Name Input
-          - Allows users to give the input node a meaningful identifier
-          - Controlled input ensures predictable updates
+          - Controlled input backed by Redux state
          --------------------------------------------------------------------- */}
       <div
         style={{
@@ -134,15 +138,13 @@ export const InputNode = ({ id, data }) => {
             textAlign: "center",
             boxSizing: "border-box",
           }}
-          value={currName}
+          value={inputName}
           onChange={handleNameChange}
         />
       </div>
 
       {/* ---------------------------------------------------------------------
           UX Suggestion
-          - Small guidance to encourage better naming
-          - Improves readability in large pipelines
          --------------------------------------------------------------------- */}
       <div
         style={{
@@ -167,8 +169,7 @@ export const InputNode = ({ id, data }) => {
 
       {/* ---------------------------------------------------------------------
           Input Type Selection
-          - Determines what kind of data this node emits
-          - Stored in global state so downstream nodes can use it
+          - Stored in Redux so downstream nodes can react to it
          --------------------------------------------------------------------- */}
       <div
         style={{
