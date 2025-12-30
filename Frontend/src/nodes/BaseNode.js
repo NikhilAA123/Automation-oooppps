@@ -1,52 +1,47 @@
 // BaseNode.js
 // -----------------------------------------------------------------------------
-// This component is the shared base container for ALL node types in the pipeline.
-// It provides:
+// Shared base container for ALL node types in the pipeline (Redux version)
+//
+// Responsibilities:
 //  - Consistent layout and styling
-//  - Header with icon, title, minimize/maximize, and delete actions
+//  - Header with icon, title, minimize/maximize, delete
 //  - Confirmation dialog for safe deletion
 //  - Minimize behavior while keeping handles active
-//  - Composition-based design so child nodes inject their own content & handles
+//  - Composition-based design (children + handles)
 // -----------------------------------------------------------------------------
-
 import { useState } from "react";
-import { useStore } from "../store"; // Zustand store for global state
+import { useDispatch } from "react-redux";
+import { removeNode } from "../store/nodesSlice";
 
-// Import UI icons
 import maximizeIcon from "../assets/maximize-icon.png";
 import minimizeIcon from "../assets/minimize-icon.png";
 
-// BaseNode component
 export const BaseNode = ({ id, title, icon, children, handles }) => {
-  // Get removeNode action from global Zustand store
-  const removeNode = useStore((state) => state.removeNode);
+
+  // Redux dispatcher (no subscriptions here)
+  const dispatch = useDispatch();
 
   // Local UI-only state
-  // These do NOT belong in global store
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
 
-  // Trigger delete confirmation dialog
   const handleDeleteClick = () => {
     setShowDeleteDialog(true);
   };
 
-  // Confirm deletion → remove node from global state
+  // ✅ Dispatch ONLY on user confirmation
   const handleConfirmDelete = () => {
-    removeNode(id);
+    dispatch(removeNode(id));
     setShowDeleteDialog(false);
   };
 
-  // Cancel deletion → just close dialog
   const handleCancelDelete = () => {
     setShowDeleteDialog(false);
   };
 
-  // Toggle minimize / maximize state
   const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
+    setIsMinimized((prev) => !prev);
   };
-
   return (
     <div
       style={{
@@ -56,14 +51,11 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
         borderRadius: 8,
         boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         position: "relative",
-        overflow: "visible", // Important: allows handles to extend outside
+        overflow: "visible", // Allows handles to extend outside the card
       }}
     >
       {/* ---------------------------------------------------------------------
           Node Header
-          - Consistent header across all nodes
-          - Light-blue background inspired by VectorShift UI
-          - Contains icon, title, and action buttons
          --------------------------------------------------------------------- */}
       <div
         style={{
@@ -76,9 +68,15 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
           borderRadius: isMinimized ? 8 : "8px 8px 0 0",
         }}
       >
-        {/* Left side: Icon + Node Title */}
+        {/* Icon + Title */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {icon && <img src={icon} alt="" style={{ width: 16, height: 16 }} />}
+          {icon && (
+            <img
+              src={icon}
+              alt=""
+              style={{ width: 16, height: 16 }}
+            />
+          )}
           <span
             style={{
               fontWeight: 600,
@@ -90,9 +88,9 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
           </span>
         </div>
 
-        {/* Right side: Node actions */}
+        {/* Actions */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* Minimize / Maximize button */}
+          {/* Minimize / Maximize */}
           <img
             src={isMinimized ? maximizeIcon : minimizeIcon}
             alt={isMinimized ? "Maximize Node" : "Minimize Node"}
@@ -109,7 +107,7 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
             onClick={toggleMinimize}
           />
 
-          {/* Placeholder for future settings */}
+          {/* Settings placeholder */}
           <span
             style={{
               cursor: "pointer",
@@ -120,7 +118,7 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
             ⚙
           </span>
 
-          {/* Delete button */}
+          {/* Delete */}
           <span
             title="Delete Node"
             style={{
@@ -142,8 +140,6 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
 
       {/* ---------------------------------------------------------------------
           Delete Confirmation Dialog
-          - Prevents accidental node deletion
-          - UX safety feature (extra beyond assignment requirements)
          --------------------------------------------------------------------- */}
       {showDeleteDialog && (
         <div
@@ -182,10 +178,10 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
               style={{
                 padding: "4px 8px",
                 fontSize: 12,
-                cursor: "pointer",
                 border: "none",
                 background: "transparent",
                 color: "#64748b",
+                cursor: "pointer",
               }}
             >
               Cancel
@@ -196,11 +192,11 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
               style={{
                 padding: "4px 8px",
                 fontSize: 12,
-                cursor: "pointer",
                 border: "none",
                 background: "#ef4444",
                 color: "#fff",
                 borderRadius: 4,
+                cursor: "pointer",
               }}
             >
               Confirm
@@ -210,16 +206,16 @@ export const BaseNode = ({ id, title, icon, children, handles }) => {
       )}
 
       {/* ---------------------------------------------------------------------
-          Node Content Area
-          - Hidden when node is minimized
-          - Actual node-specific UI is injected via children
+          Node Content
          --------------------------------------------------------------------- */}
-      {!isMinimized && <div style={{ padding: 14 }}>{children}</div>}
+      {!isMinimized && (
+        <div style={{ padding: 14 }}>
+          {children}
+        </div>
+      )}
 
       {/* ---------------------------------------------------------------------
-          Handles
-          - Always rendered even when node is minimized
-          - Ensures graph connectivity is preserved
+          Handles (always rendered)
          --------------------------------------------------------------------- */}
       {handles}
     </div>
