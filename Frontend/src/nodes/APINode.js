@@ -1,39 +1,69 @@
 // APINode.js
 // -----------------------------------------------------------------------------
 // APINode represents an external HTTP call in the pipeline.
-// It allows users to configure an API endpoint and HTTP method,
-// acting as an integration point with external services.
+// Users can configure the API endpoint and HTTP method.
 //
-// Key concepts demonstrated:
-// - Reuse of BaseNode abstraction for consistent layout and actions
-// - Controlled inputs for predictable configuration
-// - Clear separation of node-specific logic from shared UI
-// - Handles always visible to preserve graph connectivity
+// Redux responsibilities:
+// - Persist URL and method in global pipeline state
+// - Allow downstream nodes to read API configuration
 // -----------------------------------------------------------------------------
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Handle, Position } from "reactflow";
 import { BaseNode } from "./BaseNode";
+import { updateNodeField } from "../store/nodesSlice";
 import apiIcon from "../assets/api-icon.png";
 
 export const APINode = ({ id, data }) => {
+  const dispatch = useDispatch();
+
   // -------------------------------------------------------------------------
-  // Local state for API configuration
-  // These values are specific to this node instance and are kept local
-  // for fast UI updates.
+  // Local UI state
+  // - Kept local for fast and responsive typing
+  // - Synced to Redux when changes occur
   // -------------------------------------------------------------------------
 
-  const [url, setUrl] = useState(data?.url || "https://api.example.com");
+  const [url, setUrl] = useState(
+    data?.url || "https://api.example.com"
+  );
 
-  const [method, setMethod] = useState(data?.method || "GET");
+  const [method, setMethod] = useState(
+    data?.method || "GET"
+  );
+
+  // -------------------------------------------------------------------------
+  // Sync defaults to Redux on first render
+  // Ensures pipeline state is always complete
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (!data?.url) {
+      dispatch(updateNodeField({ id, field: "url", value: url }));
+    }
+    if (!data?.method) {
+      dispatch(updateNodeField({ id, field: "method", value: method }));
+    }
+  }, [id, data, url, method, dispatch]);
+
+  // -------------------------------------------------------------------------
+  // Handlers → update local UI + Redux store
+  // -------------------------------------------------------------------------
+
+  const handleUrlChange = (e) => {
+    const value = e.target.value;
+    setUrl(value);
+    dispatch(updateNodeField({ id, field: "url", value }));
+  };
+
+  const handleMethodChange = (e) => {
+    const value = e.target.value;
+    setMethod(value);
+    dispatch(updateNodeField({ id, field: "method", value }));
+  };
 
   // -------------------------------------------------------------------------
   // React Flow Handles
-  // - Target handle (left): input data for the API request
-  // - Source handle (right): API response passed downstream
-  // Handles are always rendered, even when the node is minimized.
   // -------------------------------------------------------------------------
-
   const handles = (
     <>
       <Handle
@@ -65,7 +95,6 @@ export const APINode = ({ id, data }) => {
       />
     </>
   );
-
   return (
     // ---------------------------------------------------------------------
     // BaseNode usage
