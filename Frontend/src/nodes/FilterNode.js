@@ -4,37 +4,74 @@
 // It evaluates incoming data based on a field, operator, and value,
 // and only passes data that matches the condition.
 //
-// Key concepts demonstrated:
-// - Extension of the BaseNode abstraction
-// - Controlled inputs for predictable configuration
-// - Clear modeling of common filtering logic
-// - Handles always visible to preserve graph connectivity
+// Redux responsibilities:
+// - Persist filter configuration in the global pipeline definition
+// - Enable backend / execution engine to evaluate filters deterministically
 // -----------------------------------------------------------------------------
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Handle, Position } from "reactflow";
 import { BaseNode } from "./BaseNode";
+import { updateNodeField } from "../store/nodesSlice";
 import filterIcon from "../assets/filter-icon.png";
 
 export const FilterNode = ({ id, data }) => {
+  const dispatch = useDispatch();
+
   // -------------------------------------------------------------------------
-  // Local state for filter configuration
-  // - field: property name to evaluate (e.g., status, age)
-  // - operator: comparison logic (equals, contains, etc.)
+  // Local UI state
+  // - field: property name to evaluate
+  // - operator: comparison logic
   // - value: value to compare against
-  // These are node-specific settings, so they remain local state
+  // Local state ensures smooth UI interaction
+  // Redux stores the authoritative pipeline definition
   // -------------------------------------------------------------------------
   const [field, setField] = useState(data?.field || "");
-
   const [operator, setOperator] = useState(data?.operator || "equals");
-
   const [value, setValue] = useState(data?.value || "");
 
   // -------------------------------------------------------------------------
+  // Initialize Redux state on mount
+  // Ensures filter configuration always exists in global state
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (!data?.field) {
+      dispatch(updateNodeField({ id, field: "field", value: field }));
+    }
+
+    if (!data?.operator) {
+      dispatch(updateNodeField({ id, field: "operator", value: operator }));
+    }
+
+    if (!data?.value) {
+      dispatch(updateNodeField({ id, field: "value", value }));
+    }
+  }, [id, data, field, operator, value, dispatch]);
+
+  // -------------------------------------------------------------------------
+  // Handlers — update local UI + sync to Redux
+  // -------------------------------------------------------------------------
+  const handleFieldChange = (e) => {
+    const val = e.target.value;
+    setField(val);
+    dispatch(updateNodeField({ id, field: "field", value: val }));
+  };
+
+  const handleOperatorChange = (e) => {
+    const val = e.target.value;
+    setOperator(val);
+    dispatch(updateNodeField({ id, field: "operator", value: val }));
+  };
+
+  const handleValueChange = (e) => {
+    const val = e.target.value;
+    setValue(val);
+    dispatch(updateNodeField({ id, field: "value", value: val }));
+  };
+
+  // -------------------------------------------------------------------------
   // React Flow Handles
-  // - Target handle (left): receives incoming data
-  // - Source handle (right): emits filtered data
-  // Handles are always rendered, even when the node is minimized.
   // -------------------------------------------------------------------------
   const handles = (
     <>
