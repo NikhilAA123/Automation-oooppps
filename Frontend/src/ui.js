@@ -11,7 +11,18 @@
 
 import { useCallback, useRef, useState, useEffect } from "react";
 import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
-import { useStore } from "./store";
+import { useDispatch, useSelector, shallowEqual } from 'react-redux';
+import {
+  addNode,
+  onNodesChange,
+  onEdgesChange,
+  onConnect,
+  setPipelineName,
+  undo,
+  redo,
+  clearCanvas,
+  incrementNodeID
+} from './store/nodesSlice';
 
 // Import custom node components
 import { InputNode } from "./nodes/inputNode";
@@ -65,21 +76,34 @@ export const PipelineUI = () => {
   const [zoom, setZoom] = useState(1); // Tracks current viewport zoom for the overlay
   const [isModalOpen, setIsModalOpen] = useState(false); // Controls the central node selector modal
 
+  const dispatch = useDispatch();
+
   // --- Store Subscriptions ---
-  const nodes = useStore((state) => state.nodes);
-  const edges = useStore((state) => state.edges);
-  const getNodeID = useStore((state) => state.getNodeID);
-  const addNode = useStore((state) => state.addNode);
-  const onNodesChange = useStore((state) => state.onNodesChange);
-  const onEdgesChange = useStore((state) => state.onEdgesChange);
-  const onConnect = useStore((state) => state.onConnect);
-  const undo = useStore((state) => state.undo);
-  const redo = useStore((state) => state.redo);
-  const clearCanvas = useStore((state) => state.clearCanvas);
-  const pipelineName = useStore((state) => state.pipelineName);
-  const setPipelineName = useStore((state) => state.setPipelineName);
-  const past = useStore((state) => state.past);
-  const future = useStore((state) => state.future);
+  const nodes = useSelector((state) => state.nodes.nodes, shallowEqual);
+  const edges = useSelector((state) => state.nodes.edges, shallowEqual);
+  const pipelineName = useSelector((state) => state.nodes.pipelineName);
+  const nodeIDs = useSelector((state) => state.nodes.nodeIDs);
+  const past = useSelector((state) => state.nodes.past);
+  const future = useSelector((state) => state.nodes.future);
+
+  // Helper to replicate getNodeID logic locally with Redux state
+  const getNodeID = (type) => {
+    const newID = (nodeIDs[type] || 0) + 1;
+    dispatch(incrementNodeID(type));
+    return `${type}-${newID}`;
+  };
+
+  /**
+   * Actions wrappers
+   */
+  const handleNodesChange = useCallback((changes) => dispatch(onNodesChange(changes)), [dispatch]);
+  const handleEdgesChange = useCallback((changes) => dispatch(onEdgesChange(changes)), [dispatch]);
+  const handleConnect = useCallback((connection) => dispatch(onConnect(connection)), [dispatch]);
+  const handleUndo = useCallback(() => dispatch(undo()), [dispatch]);
+  const handleRedo = useCallback(() => dispatch(redo()), [dispatch]);
+  const handleClearCanvas = useCallback(() => dispatch(clearCanvas()), [dispatch]);
+  const handleSetPipelineName = useCallback((name) => dispatch(setPipelineName(name)), [dispatch]);
+  const handleAddNode = useCallback((node) => dispatch(addNode(node)), [dispatch]);
 
   // --- Local UI logic for 'Saving' feedback ---
   const [savingStatus, setSavingStatus] = useState("saved"); // 'saved' or 'saving'
@@ -125,14 +149,14 @@ export const PipelineUI = () => {
 
       const id = getNodeID(nodeType);
 
-      addNode({
+      dispatch(addNode({
         id,
         type: nodeType,
         position,
         data: { id },
-      });
+      }));
     },
-    [rfInstance, addNode, getNodeID]
+    [rfInstance, dispatch, getNodeID]
   );
 
   /**
@@ -167,12 +191,12 @@ export const PipelineUI = () => {
     const id = getNodeID(type);
     const position = { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 50 };
 
-    addNode({
+    dispatch(addNode({
       id,
       type,
       position,
       data: { id },
-    });
+    }));
     setIsModalOpen(false);
   };
 
@@ -383,9 +407,9 @@ export const PipelineUI = () => {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
+          onConnect={handleConnect}
           onDrop={onDrop}
           onDragOver={onDragOver}
           onInit={setRfInstance}

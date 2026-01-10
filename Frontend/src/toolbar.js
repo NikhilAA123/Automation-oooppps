@@ -9,8 +9,9 @@
 // -----------------------------------------------------------------------------
 
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { DraggableNode } from "./draggableNode";
-import { useStore } from "./store";
+import { addNode, incrementNodeID } from "./store/nodesSlice";
 
 // Import UI-specific assets
 import llmIcon from "./assets/llm-icon.png";
@@ -26,9 +27,9 @@ import maximizeIcon from "./assets/maximize-icon.png";
  * A floating UI element that serves as the primary source for new nodes.
  */
 export const PipelineToolbar = () => {
-  const addNode = useStore((state) => state.addNode);
-  const getNodeID = useStore((state) => state.getNodeID);
-  const nodes = useStore((state) => state.nodes);
+  const dispatch = useDispatch();
+  const nodes = useSelector((state) => state.nodes.nodes);
+  const nodeIDs = useSelector((state) => state.nodes.nodeIDs);
 
   // --- Local UI State ---
   const [isHovered, setIsHovered] = useState(false); // Controls expansion of the menu
@@ -61,19 +62,22 @@ export const PipelineToolbar = () => {
    * Calculates a staggered offset to ensure new nodes are visible and not stacked.
    */
   const handleAddNode = (type) => {
-    const newId = getNodeID(type);
+    // ID Generation Logic (Replicated from ui.js)
+    // In a real app, this might be a custom hook useNodeID(type)
+    const newId = `${type}-${(nodeIDs[type] || 0) + 1}`;
+    dispatch(incrementNodeID(type));
 
     // Dynamic position calculation for a "scatter" or "queue" effect
     const offset = nodes.length * 40;
     const x = 300 + offset;
     const y = 80 + offset;
 
-    addNode({
+    dispatch(addNode({
       id: newId,
       type: type,
       position: { x, y },
       data: {},
-    });
+    }));
   };
 
   return (
