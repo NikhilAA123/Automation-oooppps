@@ -9,7 +9,8 @@
 // -----------------------------------------------------------------------------
 
 import { getBezierPath, EdgeLabelRenderer, BaseEdge } from 'reactflow';
-import { useStore } from './store';
+import { useDispatch } from 'react-redux';
+import { onEdgesChange } from './store/nodesSlice';
 
 /**
  * CustomEdge Component
@@ -26,8 +27,8 @@ export const CustomEdge = ({
     style = {},
     markerEnd,
 }) => {
-    // Access onEdgesChange from store to allow edge deletion
-    const onEdgesChange = useStore((state) => state.onEdgesChange);
+    // Access dispatch for edge actions
+    const dispatch = useDispatch();
 
     // Calculate the Bézier path and the center position for the label/button
     const [edgePath, labelX, labelY] = getBezierPath({
@@ -44,7 +45,7 @@ export const CustomEdge = ({
      * Triggers the removal of this edge from the React Flow canvas.
      */
     const handleDeleteEdge = () => {
-        onEdgesChange([{ type: 'remove', id }]);
+        dispatch(onEdgesChange([{ type: 'remove', id }]));
     };
 
     return (

@@ -8,7 +8,7 @@
 // - Provides a fixed-position action button with interactive hover effects.
 // -----------------------------------------------------------------------------
 
-import { useStore } from "./store";
+import { useSelector } from "react-redux";
 
 /**
  * SubmitButton Component
@@ -16,8 +16,8 @@ import { useStore } from "./store";
  */
 export const SubmitButton = () => {
   // Extract graph structure from the centerized store
-  const nodes = useStore((state) => state.nodes);
-  const edges = useStore((state) => state.edges);
+  const nodes = useSelector((state) => state.nodes.nodes);
+  const edges = useSelector((state) => state.nodes.edges);
 
   /**
    * handleSubmit
