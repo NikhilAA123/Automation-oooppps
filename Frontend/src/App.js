@@ -10,6 +10,8 @@
 import { PipelineToolbar } from './toolbar';
 import { PipelineUI } from './ui';
 import { SubmitButton } from './submit';
+import { Provider } from 'react-redux';
+import { store } from './store/store';
 
 /**
  * App Component
@@ -17,16 +19,18 @@ import { SubmitButton } from './submit';
  */
 function App() {
   return (
-    <div>
-      {/* Top toolbar for dragging and dropping new nodes */}
-      <PipelineToolbar />
+    <Provider store={store}>
+      <div>
+        {/* Top toolbar for dragging and dropping new nodes */}
+        <PipelineToolbar />
 
-      {/* Main canvas area where nodes and edges are rendered */}
-      <PipelineUI />
+        {/* Main canvas area where nodes and edges are rendered */}
+        <PipelineUI />
 
-      {/* Footer/Bottom action area for pipeline submission */}
-      <SubmitButton />
-    </div>
+        {/* Footer/Bottom action area for pipeline submission */}
+        <SubmitButton />
+      </div>
+    </Provider>
   );
 }
 
