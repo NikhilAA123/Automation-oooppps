@@ -99,7 +99,7 @@ def check_dag(nodes: List[Dict], edges: List[Dict]) -> bool:
     adjacency = {node_id: [] for node_id in node_ids}
     
     # Phase 2: Populate graph structure from edges
-     for edge in edges:
+    for edge in edges:
         source = edge.get("source")
         target = edge.get("target")
         
