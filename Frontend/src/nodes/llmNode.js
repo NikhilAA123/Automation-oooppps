@@ -115,7 +115,15 @@ export const LLMNode = ({ id }) => {
         value={systemPrompt}
         onChange={handleSystemPromptChange}
         placeholder="System instructions"
-        style={{ width: "100%", minHeight: 60, marginBottom: 10 }}
+        style={{
+          width: "100%",
+          minHeight: 60,
+          marginBottom: 10,
+          boxSizing: 'border-box', // Ensures padding doesn't push width > 100%
+          padding: 8,
+          borderRadius: 4,
+          border: '1px solid #e2e8f0'
+        }}
       />
 
       {/* User Prompt */}
@@ -123,7 +131,15 @@ export const LLMNode = ({ id }) => {
         value={userPrompt}
         onChange={handleUserPromptChange}
         placeholder='Type "{{" to use variables'
-        style={{ width: "100%", minHeight: 60, marginBottom: 10 }}
+        style={{
+          width: "100%",
+          minHeight: 60,
+          marginBottom: 10,
+          boxSizing: 'border-box',
+          padding: 8,
+          borderRadius: 4,
+          border: '1px solid #e2e8f0'
+        }}
       />
 
       {/* Model Selection */}
