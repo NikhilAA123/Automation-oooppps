@@ -18,6 +18,7 @@ A powerful, interactive, and visually stunning pipeline builder. Built with Reac
 - **Undo / Redo**: Full history support for node deletion, movement, and connections.
 - **Interactive Connections**: Custom edges with integrated "X" delete buttons and mismatch validation (red color).
 - **Auto-Saving Indicators**: Real-time pulsing "Saving..." state and "Last saved" timestamps.
+- **State Persistence**: Pipeline state (nodes/edges) is automatically saved to local storage, preserving work across reloads.
 - **Clean Workspace**: A rounded-corner contained canvas for better focus.
 
 ### ⚙️ Backend (FastAPI)
@@ -28,7 +29,7 @@ A powerful, interactive, and visually stunning pipeline builder. Built with Reac
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, React Flow, Zustand (State Management), Vanilla CSS.
+- **Frontend**: React, React Flow, Redux Toolkit (State Management), Vanilla CSS.
 - **Backend**: Python, FastAPI, Pydantic.
 - **Icons**: Custom SVG/PNG assets for all node types.
 
@@ -118,7 +119,7 @@ kubectl get nodes # Should be empty or No resources found
 
 ## 📁 Project Structure
 
-- `frontend/`: React application using React Flow and Zustand.
+- `frontend/`: React application using React Flow and Redux Toolkit.
 - `backend/`: FastAPI server for DAG validation and pipeline parsing.
 - `k8s/`: Kubernetes manifests (Deployment, Service, Ingress, ClusterIssuer).
 
